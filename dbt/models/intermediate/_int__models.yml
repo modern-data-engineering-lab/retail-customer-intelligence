@@ -1,0 +1,19 @@
+version: 2
+
+models:
+  - name: int_order_payments_summary
+    columns:
+      - name: order_id
+        data_tests: [not_null, unique]
+
+  - name: int_customer_orders
+    columns:
+      - name: order_id
+        data_tests: [not_null, unique]
+      - name: customer_unique_id
+        data_tests: [not_null]
+
+  - name: int_customer_location_current
+    columns:
+      - name: customer_unique_id
+        data_tests: [not_null, unique]
