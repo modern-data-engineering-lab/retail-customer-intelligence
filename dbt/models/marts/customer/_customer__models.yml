@@ -13,29 +13,31 @@ models:
           - not_null
           - unique
           - relationships:
-              to: ref('dim_customers')
-              field: customer_unique_id
+              arguments:
+                to: ref('dim_customers')
+                field: customer_unique_id
       - name: r_score
         data_tests:
-          - accepted_values: { values: [1, 2, 3, 4, 5] }
+          - accepted_values: { arguments: { values: [1, 2, 3, 4, 5] } }
       - name: f_score
         data_tests:
-          - accepted_values: { values: [1, 2, 3, 4, 5] }
+          - accepted_values: { arguments: { values: [1, 2, 3, 4, 5] } }
       - name: m_score
         data_tests:
-          - accepted_values: { values: [1, 2, 3, 4, 5] }
+          - accepted_values: { arguments: { values: [1, 2, 3, 4, 5] } }
       - name: rfm_segment
         data_tests:
           - accepted_values:
-              values:
-                [
-                  "Champions",
-                  "Loyal",
-                  "New",
-                  "At Risk",
-                  "Hibernating",
-                  "Needs Attention",
-                ]
+              arguments:
+                values:
+                  [
+                    "Champions",
+                    "Loyal",
+                    "New",
+                    "At Risk",
+                    "Hibernating",
+                    "Needs Attention",
+                  ]
 
   - name: fct_customer_churn_risk
     columns:
@@ -44,12 +46,14 @@ models:
           - not_null
           - unique
           - relationships:
-              to: ref('dim_customers')
-              field: customer_unique_id
+              arguments:
+                to: ref('dim_customers')
+                field: customer_unique_id
       - name: churn_risk_tier
         data_tests:
           - accepted_values:
-              values: ["High", "Medium", "Low"]
+              arguments:
+                values: ["High", "Medium", "Low"]
 
   - name: fct_customer_ltv
     columns:
@@ -58,5 +62,6 @@ models:
           - not_null
           - unique
           - relationships:
-              to: ref('dim_customers')
-              field: customer_unique_id
+              arguments:
+                to: ref('dim_customers')
+                field: customer_unique_id

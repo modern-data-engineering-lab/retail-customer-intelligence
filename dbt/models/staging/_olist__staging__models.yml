@@ -16,22 +16,24 @@ models:
         data_tests:
           - not_null
           - relationships:
-              to: ref('stg_olist__customers')
-              field: customer_id
+              arguments:
+                to: ref('stg_olist__customers')
+                field: customer_id
       - name: order_status
         data_tests:
           - accepted_values:
-              values:
-                [
-                  "delivered",
-                  "shipped",
-                  "canceled",
-                  "unavailable",
-                  "invoiced",
-                  "processing",
-                  "created",
-                  "approved",
-                ]
+              arguments:
+                values:
+                  [
+                    "delivered",
+                    "shipped",
+                    "canceled",
+                    "unavailable",
+                    "invoiced",
+                    "processing",
+                    "created",
+                    "approved",
+                  ]
 
   - name: stg_olist__order_items
     columns:
@@ -39,20 +41,23 @@ models:
         data_tests:
           - not_null
           - relationships:
-              to: ref('stg_olist__products')
-              field: product_id
+              arguments:
+                to: ref('stg_olist__products')
+                field: product_id
       - name: seller_id
         data_tests:
           - not_null
           - relationships:
-              to: ref('stg_olist__sellers')
-              field: seller_id
+              arguments:
+                to: ref('stg_olist__sellers')
+                field: seller_id
       - name: order_id
         data_tests:
           - not_null
           - relationships:
-              to: ref('stg_olist__orders')
-              field: order_id
+              arguments:
+                to: ref('stg_olist__orders')
+                field: order_id
 
   - name: stg_olist__order_payments
     columns:
@@ -60,8 +65,9 @@ models:
         data_tests:
           - not_null
           - relationships:
-              to: ref('stg_olist__orders')
-              field: order_id
+              arguments:
+                to: ref('stg_olist__orders')
+                field: order_id
 
   - name: stg_olist__order_reviews
     columns:
@@ -70,7 +76,8 @@ models:
       - name: review_score
         data_tests:
           - accepted_values:
-              values: [1, 2, 3, 4, 5]
+              arguments:
+                values: [1, 2, 3, 4, 5]
 
   - name: stg_olist__products
     columns:
