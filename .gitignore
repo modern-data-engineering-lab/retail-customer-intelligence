@@ -1,0 +1,23 @@
+.databricks/
+.venv/
+venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+.idea/
+.vscode/
+*.egg-info/
+build/
+dist/
+
+# dbt
+dbt/target/
+dbt/dbt_packages/
+dbt/logs/
+.env
+
+# Raw Kaggle data lands here locally, never committed
+data/raw/*.csv
+data/raw/*.zip
+!data/raw/.gitkeep

@@ -1,0 +1,56 @@
+# Copy to ~/.dbt/profiles.yml, or point DBT_PROFILES_DIR at this dbt/profiles directory,
+# then fill in the env vars below. http_path comes from the SQL warehouse's Connection
+# Details tab (not the CLI profile's host) — see terraform/README for how this repo looks
+# up the shared Free Edition warehouse's ID.
+#
+# Local `dev`: get a short-lived token from the existing CLI profile instead of minting a
+# personal access token — `export DATABRICKS_TOKEN=$(databricks auth token --profile
+# weather-app | jq -r .access_token)`.
+#
+# `ci`/`staging`/`prod`: OAuth M2M via the same service-principal secrets Terraform/CI already
+# use for bundle deploys (DATABRICKS_CLIENT_ID / DATABRICKS_CLIENT_SECRET).
+
+retail_customer_intelligence:
+  target: dev
+  outputs:
+    dev:
+      type: databricks
+      catalog: staging_catalog
+      schema: retail_customer_intelligence_dev
+      host: "{{ env_var('DATABRICKS_HOST') }}"
+      http_path: "{{ env_var('DBT_WAREHOUSE_HTTP_PATH') }}"
+      token: "{{ env_var('DATABRICKS_TOKEN') }}"
+      threads: 4
+
+    ci:
+      type: databricks
+      catalog: staging_catalog
+      schema: retail_customer_intelligence_ci
+      host: "{{ env_var('DATABRICKS_HOST') }}"
+      http_path: "{{ env_var('DBT_WAREHOUSE_HTTP_PATH') }}"
+      auth_type: oauth-m2m
+      client_id: "{{ env_var('DATABRICKS_CLIENT_ID') }}"
+      client_secret: "{{ env_var('DATABRICKS_CLIENT_SECRET') }}"
+      threads: 4
+
+    staging:
+      type: databricks
+      catalog: staging_catalog
+      schema: retail_customer_intelligence
+      host: "{{ env_var('DATABRICKS_HOST') }}"
+      http_path: "{{ env_var('DBT_WAREHOUSE_HTTP_PATH') }}"
+      auth_type: oauth-m2m
+      client_id: "{{ env_var('DATABRICKS_CLIENT_ID') }}"
+      client_secret: "{{ env_var('DATABRICKS_CLIENT_SECRET') }}"
+      threads: 4
+
+    prod:
+      type: databricks
+      catalog: prod_catalog
+      schema: retail_customer_intelligence
+      host: "{{ env_var('DATABRICKS_HOST') }}"
+      http_path: "{{ env_var('DBT_WAREHOUSE_HTTP_PATH') }}"
+      auth_type: oauth-m2m
+      client_id: "{{ env_var('DATABRICKS_CLIENT_ID') }}"
+      client_secret: "{{ env_var('DATABRICKS_CLIENT_SECRET') }}"
+      threads: 4

@@ -1,0 +1,11 @@
+[sqlfluff]
+templater = dbt
+dialect = databricks
+
+[sqlfluff:templater:dbt]
+project_dir = dbt
+profiles_dir = dbt/profiles
+target = dev
+
+[sqlfluff:indentation]
+tab_space_size = 4
