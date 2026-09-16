@@ -17,3 +17,8 @@ models:
     columns:
       - name: customer_unique_id
         data_tests: [not_null, unique]
+
+  - name: int_order_items_enriched
+    columns:
+      - name: order_item_key
+        data_tests: [not_null, unique]
