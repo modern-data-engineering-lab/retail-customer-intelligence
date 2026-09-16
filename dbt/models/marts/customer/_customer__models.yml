@@ -50,3 +50,13 @@ models:
         data_tests:
           - accepted_values:
               values: ["High", "Medium", "Low"]
+
+  - name: fct_customer_ltv
+    columns:
+      - name: customer_unique_id
+        data_tests:
+          - not_null
+          - unique
+          - relationships:
+              to: ref('dim_customers')
+              field: customer_unique_id
