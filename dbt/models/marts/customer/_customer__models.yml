@@ -36,3 +36,17 @@ models:
                   "Hibernating",
                   "Needs Attention",
                 ]
+
+  - name: fct_customer_churn_risk
+    columns:
+      - name: customer_unique_id
+        data_tests:
+          - not_null
+          - unique
+          - relationships:
+              to: ref('dim_customers')
+              field: customer_unique_id
+      - name: churn_risk_tier
+        data_tests:
+          - accepted_values:
+              values: ["High", "Medium", "Low"]
