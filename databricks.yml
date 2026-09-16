@@ -1,0 +1,51 @@
+###########################################################################################
+# Main Databricks Asset Bundle configuration.
+#
+# Deploys a job that loads the 9 Olist CSVs into bronze Delta tables, then runs the dbt DAG
+# (staging -> intermediate -> marts, with tests) via a native dbt_task, plus a Lakeview
+# dashboard on top of the marts. Same dev/staging/prod target shape as
+# databricks-bundle-template, which this repo forks its deployment conventions from — see that
+# repo's databricks.yml for the fuller explanation of mode/run_as/root_path.
+#
+# See https://docs.databricks.com/dev-tools/bundles/index.html for documentation.
+###########################################################################################
+
+bundle:
+  name: retail_customer_intelligence
+
+include:
+  - "./resources/variables.yml"
+  - "./resources/job/dbt_build.job.yml"
+
+targets:
+  dev:
+    mode: development
+    default: true
+    workspace:
+      root_path: /Workspace/Users/${workspace.current_user.userName}/.bundle/${bundle.name}/${bundle.target}
+    variables:
+      catalog: staging_catalog
+      schema: retail_customer_intelligence_dev
+
+  staging:
+    mode: development
+    workspace:
+      root_path: /Workspace/Users/${workspace.current_user.userName}/.bundle/${bundle.name}/${bundle.target}
+    variables:
+      catalog: staging_catalog
+
+  prod:
+    mode: production
+    workspace:
+      # Deploy under a shared path, not a personal user folder — see
+      # databricks-bundle-template/databricks.yml for why.
+      root_path: /Workspace/Shared/.bundle/${bundle.name}/${bundle.target}
+    variables:
+      catalog: prod_catalog
+      notification_email: data-alerts@example.com
+    # Must be the prod service principal's Application ID (a UUID, "Client ID" on its page),
+    # not its display name — see databricks-bundle-template's Troubleshooting notes for the
+    # real gotcha this caused there. Replace with `terraform output
+    # prod_service_principal_application_id` from terraform/.
+    run_as:
+      service_principal_name: REPLACE_WITH_PROD_SP_APPLICATION_ID

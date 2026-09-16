@@ -1,0 +1,30 @@
+variables:
+  catalog:
+    description: >
+      Unity Catalog catalog to deploy into for this target — the SHARED staging_catalog/
+      prod_catalog provisioned by databricks-bundle-template's Terraform, not one this repo
+      owns. Overridden per target in ../databricks.yml.
+    default: staging_catalog
+
+  schema:
+    description: >
+      This repo's own schema inside the shared catalog — the real isolation boundary now that
+      more than one repo shares a catalog. Must match terraform/variables.tf's schema_name.
+    default: retail_customer_intelligence
+
+  warehouse_id:
+    description: >
+      ID of the shared Free Edition SQL warehouse the dbt_task runs through. No safe default —
+      an empty/wrong ID should fail loudly on deploy, not silently target the wrong endpoint.
+      Look it up with: databricks warehouses list --profile weather-app (same value as
+      terraform/variables.tf's warehouse_id).
+
+  raw_data_path:
+    description: >
+      Unity Catalog volume path containing the 9 raw Olist CSVs. Derived from catalog/schema
+      so it moves automatically with the target.
+    default: /Volumes/${var.catalog}/${var.schema}/raw
+
+  notification_email:
+    description: Email address for job-failure notifications.
+    default: changeme@example.com

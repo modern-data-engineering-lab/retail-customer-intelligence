@@ -1,0 +1,62 @@
+######################################
+# Job: load bronze -> dbt build (staging -> intermediate -> marts, with tests)
+######################################
+# Paths are relative to the folder this YAML file lives in.
+resources:
+  jobs:
+    dbt_build:
+      name: dbt_build_${bundle.target}
+      description: Loads the 9 Olist CSVs into bronze Delta tables, then runs the full dbt DAG.
+      email_notifications:
+        on_failure:
+          - ${var.notification_email}
+      tasks:
+        - task_key: load_bronze
+          notebook_task:
+            notebook_path: ../../src/ingestion/load_bronze.py
+            base_parameters:
+              catalog_name: ${var.catalog}
+              schema_name: ${var.schema}
+              raw_volume_path: ${var.raw_data_path}
+            source: WORKSPACE
+          description: Reads the 9 raw Olist CSVs from the UC volume, writes Delta bronze tables.
+
+        - task_key: dbt_build
+          depends_on:
+            - task_key: load_bronze
+          dbt_task:
+            project_directory: ../../dbt
+            commands:
+              - "dbt deps"
+              - "dbt seed --target ${bundle.target} --full-refresh"
+              - "dbt build --target ${bundle.target}"
+              - "dbt docs generate --target ${bundle.target}"
+            warehouse_id: ${var.warehouse_id}
+            catalog: ${var.catalog}
+            schema: ${var.schema}
+            source: WORKSPACE
+          environment_key: dbt_env
+          description: >
+            Installs dbt packages, seeds the category-translation lookup, builds staging ->
+            intermediate -> marts with tests, generates docs.
+
+      # environment_key is required for a dbt_task on serverless compute (Free Edition's only
+      # option — see terraform/README.md) — this is where dbt-databricks actually gets
+      # installed, not a task-level `libraries` block (that targets classic clusters).
+      environments:
+        - environment_key: dbt_env
+          spec:
+            client: "1"
+            dependencies:
+              - "dbt-databricks>=1.8.0,<2.0.0"
+
+      # A demo repo, not a live pipeline — leave paused so it never runs unattended against a
+      # Free Edition workspace. Flip to UNPAUSED deliberately once you actually want a schedule.
+      schedule:
+        quartz_cron_expression: "0 0 6 * * ?"
+        timezone_id: "America/Chicago"
+        pause_status: PAUSED
+
+      parameters:
+        - name: target
+          default: ${bundle.target}
