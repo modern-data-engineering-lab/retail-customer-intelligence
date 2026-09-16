@@ -1,0 +1,28 @@
+version: 2
+
+sources:
+  - name: bronze
+    description: >
+      Raw Olist tables loaded by src/ingestion/load_bronze.py from the 9 Kaggle CSVs sitting
+      in the Unity Catalog volume. Same catalog/schema as everything else in this environment
+      (see terraform/README.md — this repo uses one schema per environment, not a separate
+      bronze schema), distinguished only by the bronze_ table-name prefix.
+    database: "{{ target.database }}"
+    schema: "{{ target.schema }}"
+    tables:
+      - name: customers
+        identifier: bronze_customers
+      - name: orders
+        identifier: bronze_orders
+      - name: order_items
+        identifier: bronze_order_items
+      - name: order_payments
+        identifier: bronze_order_payments
+      - name: order_reviews
+        identifier: bronze_order_reviews
+      - name: products
+        identifier: bronze_products
+      - name: sellers
+        identifier: bronze_sellers
+      - name: geolocation
+        identifier: bronze_geolocation
