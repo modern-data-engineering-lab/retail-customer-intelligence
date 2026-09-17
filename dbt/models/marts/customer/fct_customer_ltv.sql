@@ -17,7 +17,9 @@ with customer_base as (
 ),
 
 churn as (
-    select customer_unique_id, avg_days_between_orders
+    select
+        customer_unique_id,
+        avg_days_between_orders
     from {{ ref('fct_customer_churn_risk') }}
 ),
 
@@ -30,10 +32,10 @@ cohort_lifespan as (
 combined as (
     select
         cb.customer_unique_id,
-        cb.lifetime_spend                                              as historical_ltv,
-        cb.lifetime_spend / nullif(cb.lifetime_order_count, 0)         as avg_order_value,
+        cb.lifetime_spend as historical_ltv,
         c.avg_days_between_orders,
-        cl.avg_customer_lifespan_days
+        cl.avg_customer_lifespan_days,
+        cb.lifetime_spend / nullif(cb.lifetime_order_count, 0) as avg_order_value
     from customer_base as cb
     left join churn as c
         on cb.customer_unique_id = c.customer_unique_id

@@ -4,7 +4,7 @@ with order_agg as (
         customer_unique_id,
         min(order_purchase_timestamp) as first_order_date,
         max(order_purchase_timestamp) as last_order_date,
-        count(distinct order_id)      as lifetime_order_count
+        count(distinct order_id) as lifetime_order_count
     from {{ ref('int_customer_orders') }}
     group by customer_unique_id
 ),
@@ -24,10 +24,10 @@ select
     a.first_order_date,
     a.last_order_date,
     a.lifetime_order_count,
-    coalesce(p.lifetime_spend, 0) as lifetime_spend,
     loc.customer_city,
     loc.customer_state,
-    loc.customer_zip_code_prefix
+    loc.customer_zip_code_prefix,
+    coalesce(p.lifetime_spend, 0) as lifetime_spend
 from order_agg as a
 left join payment_agg as p
     on a.customer_unique_id = p.customer_unique_id

@@ -7,7 +7,7 @@ select
     avg(geolocation_lng) as geolocation_lng,
     -- city/state are inconsistent across duplicate rows for the same prefix (free-text,
     -- differing capitalization/spelling); take any one non-null value rather than avg-ing text.
-    first(geolocation_city, true)  as geolocation_city,
+    first(geolocation_city, true) as geolocation_city,
     first(geolocation_state, true) as geolocation_state
 from {{ source('bronze', 'geolocation') }}
 group by geolocation_zip_code_prefix

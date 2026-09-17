@@ -14,9 +14,9 @@ with ranked as (
     select
         review_id,
         order_id,
-        try_cast(review_score as int) as review_score,
         cast(review_creation_date as timestamp) as review_creation_date,
         cast(review_answer_timestamp as timestamp) as review_answer_timestamp,
+        try_cast(review_score as int) as review_score,
         row_number() over (
             partition by order_id
             order by review_creation_date desc
@@ -32,5 +32,6 @@ select
     review_creation_date,
     review_answer_timestamp
 from ranked
-where review_rank = 1
-  and review_score between 1 and 5
+where
+    review_rank = 1
+    and review_score between 1 and 5

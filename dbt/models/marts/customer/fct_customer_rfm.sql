@@ -35,8 +35,8 @@ customer_agg as (
     select
         customer_unique_id,
         max(order_purchase_timestamp) as last_order_date,
-        count(distinct order_id)      as frequency,
-        sum(total_payment_value)      as monetary
+        count(distinct order_id) as frequency,
+        sum(total_payment_value) as monetary
     from customer_orders_with_payment
     group by customer_unique_id
 ),
@@ -45,9 +45,9 @@ with_recency as (
     select
         c.customer_unique_id,
         c.last_order_date,
-        datediff(s.snapshot_date, c.last_order_date) as recency_days,
         c.frequency,
-        c.monetary
+        c.monetary,
+        datediff(s.snapshot_date, c.last_order_date) as recency_days
     from customer_agg as c
     cross join snapshot as s
 ),

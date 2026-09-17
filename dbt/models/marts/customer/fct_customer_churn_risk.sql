@@ -56,13 +56,15 @@ order_agg as (
     select
         customer_unique_id,
         max(order_purchase_timestamp) as last_order_date,
-        count(distinct order_id)      as order_frequency
+        count(distinct order_id) as order_frequency
     from orders
     group by customer_unique_id
 ),
 
 last_status as (
-    select customer_unique_id, order_status as last_order_status
+    select
+        customer_unique_id,
+        order_status as last_order_status
     from (
         select
             customer_unique_id,
@@ -79,13 +81,13 @@ last_status as (
 combined as (
     select
         a.customer_unique_id,
-        datediff(s.snapshot_date, a.last_order_date) as recency_days,
         a.order_frequency,
         g.avg_days_between_orders,
-        a.order_frequency = 1 as is_one_time_buyer,
         rv.avg_review_score,
         d.pct_orders_delivered_late,
-        ls.last_order_status
+        ls.last_order_status,
+        datediff(s.snapshot_date, a.last_order_date) as recency_days,
+        a.order_frequency = 1 as is_one_time_buyer
     from order_agg as a
     cross join snapshot as s
     left join customer_gap_agg as g on a.customer_unique_id = g.customer_unique_id
