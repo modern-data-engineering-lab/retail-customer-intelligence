@@ -34,6 +34,17 @@ for bronze_name, filename in RAW_FILES.items():
     source_path = f"{raw_volume_path}/{filename}"
     target_table = f"{catalog_name}.{schema_name}.bronze_{bronze_name}"
 
-    df = spark.read.option("header", "true").option("inferSchema", "true").csv(source_path)
+    # multiLine is required — olist_order_reviews_dataset.csv has free-text review comments
+    # with embedded newlines inside quoted fields; without it Spark's line-based CSV reader
+    # misparses those rows and shifts every later column (review_score ends up holding comment
+    # text). Verified: Python's csv module (which handles this correctly by default) parses all
+    # 99,224 review rows cleanly with no column-count mismatches — this is a Spark reader
+    # default, not a real defect in the source data.
+    df = (
+        spark.read.option("header", "true")
+        .option("inferSchema", "true")
+        .option("multiLine", "true")
+        .csv(source_path)
+    )
     df.write.mode("overwrite").option("overwriteSchema", "true").saveAsTable(target_table)
     print(f"Loaded {df.count()} rows into {target_table}")
