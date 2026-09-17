@@ -42,12 +42,14 @@ output "warehouse_http_path" {
 output "manual_use_catalog_grant_commands" {
   description = <<-EOT
     databricks_grants can't safely manage the shared catalog's grant list from this repo's
-    Terraform state (see databricks.tf) — run these once after apply, via the Databricks SQL
-    editor or `databricks sql`, so this repo's service principals can traverse into the shared
-    catalog to reach their own schema.
+    Terraform state (see databricks.tf) — run these once after apply so this repo's service
+    principals can traverse into the shared catalog to reach their own schema. Uses the Grants
+    REST API (via the CLI) rather than SQL — it's an additive patch (add USE_CATALOG to this
+    principal) rather than the authoritative replace-all a raw GRANT statement risks looking
+    like, and it needs no SQL warehouse running to execute.
   EOT
   value = [
-    "GRANT USE CATALOG ON CATALOG ${var.staging_catalog_name} TO `${databricks_service_principal.staging.application_id}`;",
-    "GRANT USE CATALOG ON CATALOG ${var.prod_catalog_name} TO `${databricks_service_principal.prod.application_id}`;",
+    "databricks grants update catalog ${var.staging_catalog_name} --profile weather-app --json '{\"changes\": [{\"principal\": \"${databricks_service_principal.staging.application_id}\", \"add\": [\"USE_CATALOG\"]}]}'",
+    "databricks grants update catalog ${var.prod_catalog_name} --profile weather-app --json '{\"changes\": [{\"principal\": \"${databricks_service_principal.prod.application_id}\", \"add\": [\"USE_CATALOG\"]}]}'",
   ]
 }

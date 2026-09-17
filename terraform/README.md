@@ -20,6 +20,12 @@ and grants at the **schema** level instead, where this repo has sole ownership. 
 that can't be fully automated as a result: granting this repo's service principals `USE
 CATALOG` on the shared catalog (needed just to traverse into it) has to happen once, manually,
 outside Terraform — see `terraform apply`'s `manual_use_catalog_grant_commands` output below.
+That output uses `databricks grants update` (the Grants REST API via the CLI), not a raw SQL
+`GRANT` statement — it's an additive patch scoped to one principal rather than something that
+risks reading as authoritative, and it needs no SQL warehouse running to execute. Confirmed
+working: `databricks grants update catalog staging_catalog ... ` returned the full privilege
+list afterward, `databricks-bundle-template`'s own `ALL_PRIVILEGES` grant on that catalog
+untouched.
 
 ## Prerequisites
 
@@ -43,10 +49,10 @@ terraform plan    # read it before applying — it's creating real resources in 
 terraform apply
 ```
 
-After apply, run the two commands from the `manual_use_catalog_grant_commands` output (via the
-Databricks SQL editor or `databricks sql`) — without this, both service principals can see
-their own schema exists but can't actually reach it, since `USE CATALOG` on the parent catalog
-isn't something this repo's Terraform is allowed to grant (see above).
+After apply, run the two commands from the `manual_use_catalog_grant_commands` output — without
+this, both service principals can see their own schema exists but can't actually reach it,
+since `USE CATALOG` on the parent catalog isn't something this repo's Terraform is allowed to
+grant (see above).
 
 ```bash
 terraform output prod_service_principal_application_id
