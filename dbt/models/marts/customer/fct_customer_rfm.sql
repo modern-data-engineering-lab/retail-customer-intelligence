@@ -1,4 +1,9 @@
--- Grain: one row per customer_unique_id. Recency/Frequency/Monetary segmentation.
+-- Grain: one row per customer_unique_id who has at least one non-canceled/unavailable order —
+-- NOT every customer in dim_customers. A customer whose orders were all canceled/unavailable
+-- has no real purchase behavior to score, so they're intentionally absent here rather than
+-- given a meaningless R/F/M (verified against the real warehouse: 1,106 of 96,096 customers,
+-- ~1.2%, fall into this group). fct_customer_churn_risk and fct_customer_ltv still cover them —
+-- see tests/assert_mart_customer_counts_match.sql for how this asymmetry is actually tested.
 --
 -- snapshot_date is computed from the data itself (max order date + 1 day), not from today's
 -- date — this is a static historical dataset, "today" would make recency meaningless.
