@@ -28,7 +28,7 @@ retail_customer_intelligence:
       schema: retail_customer_intelligence_ci
       host: "{{ env_var('DATABRICKS_HOST') }}"
       http_path: "{{ env_var('DBT_WAREHOUSE_HTTP_PATH') }}"
-      auth_type: oauth-m2m
+      auth_type: oauth
       client_id: "{{ env_var('DATABRICKS_CLIENT_ID') }}"
       client_secret: "{{ env_var('DATABRICKS_CLIENT_SECRET') }}"
       threads: 4
@@ -39,7 +39,7 @@ retail_customer_intelligence:
       schema: retail_customer_intelligence
       host: "{{ env_var('DATABRICKS_HOST') }}"
       http_path: "{{ env_var('DBT_WAREHOUSE_HTTP_PATH') }}"
-      auth_type: oauth-m2m
+      auth_type: oauth
       client_id: "{{ env_var('DATABRICKS_CLIENT_ID') }}"
       client_secret: "{{ env_var('DATABRICKS_CLIENT_SECRET') }}"
       threads: 4
@@ -50,7 +50,7 @@ retail_customer_intelligence:
       schema: retail_customer_intelligence
       host: "{{ env_var('DATABRICKS_HOST') }}"
       http_path: "{{ env_var('DBT_WAREHOUSE_HTTP_PATH') }}"
-      auth_type: oauth-m2m
+      auth_type: oauth
       client_id: "{{ env_var('DATABRICKS_CLIENT_ID') }}"
       client_secret: "{{ env_var('DATABRICKS_CLIENT_SECRET') }}"
       threads: 4
