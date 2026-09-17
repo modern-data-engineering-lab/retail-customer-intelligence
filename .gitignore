@@ -17,7 +17,11 @@ dbt/dbt_packages/
 dbt/logs/
 dbt/profiles/profiles.yml
 dbt/profiles/.user.yml
+/logs/
 .env
+
+# terraform
+terraform/tfplan
 
 # Raw Kaggle data lands here locally, never committed
 data/raw/*.csv
