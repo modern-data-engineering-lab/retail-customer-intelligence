@@ -14,10 +14,10 @@ variables:
 
   warehouse_id:
     description: >
-      ID of the shared Free Edition SQL warehouse the dbt_task runs through. No safe default —
-      an empty/wrong ID should fail loudly on deploy, not silently target the wrong endpoint.
-      Look it up with: databricks warehouses list --profile weather-app (same value as
-      terraform/variables.tf's warehouse_id).
+      ID of the shared Free Edition SQL warehouse the dbt_task runs through — the same
+      "Serverless Starter Warehouse" every environment uses (Free Edition gives you exactly
+      one). Looked up with: databricks warehouses list --profile weather-app.
+    default: "660465cd5dea1185"
 
   raw_data_path:
     description: >

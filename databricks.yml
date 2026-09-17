@@ -48,4 +48,4 @@ targets:
     # real gotcha this caused there. Replace with `terraform output
     # prod_service_principal_application_id` from terraform/.
     run_as:
-      service_principal_name: REPLACE_WITH_PROD_SP_APPLICATION_ID
+      service_principal_name: 875c4b03-96f0-4b3b-a3b5-a55ce4d2a1d0
