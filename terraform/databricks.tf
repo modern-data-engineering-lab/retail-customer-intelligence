@@ -33,6 +33,26 @@ resource "databricks_schema" "prod" {
   force_destroy = true
 }
 
+# CI always tests against the staging catalog (see resources/variables.yml / dbt's `ci`
+# target), in its own schema separate from the "real" staging schema above — real permission
+# error hit without this: "PERMISSION_DENIED: User does not have CREATE SCHEMA on Catalog
+# 'staging_catalog'" the first time `dbt seed --target ci` tried to create it on the fly. Kept
+# narrow (its own schema, its own grant) rather than granting CREATE_SCHEMA catalog-wide, same
+# isolation philosophy as the rest of this file.
+resource "databricks_schema" "ci" {
+  catalog_name  = data.databricks_catalog.staging.name
+  name          = "${var.schema_name}_ci"
+  force_destroy = true
+}
+
+resource "databricks_grants" "ci_schema" {
+  schema = "${data.databricks_catalog.staging.name}.${databricks_schema.ci.name}"
+  grant {
+    principal  = databricks_service_principal.staging.application_id
+    privileges = ["ALL_PRIVILEGES"]
+  }
+}
+
 ####################################################
 # Volumes — where the Olist CSVs get uploaded (manually — Terraform provisions the volume,
 # not the upload; see main README Getting Started).
@@ -55,14 +75,23 @@ resource "databricks_volume" "prod_raw" {
 # Service principals — one per environment, same rationale as databricks-bundle-template's
 # main README ("Why two, not one").
 ####################################################
+# databricks_sql_access is required, not implied by catalog/schema grants or warehouse
+# CAN_USE — real error hit without it: "This API is disabled for users without the
+# databricks-sql-access or workspace-consume entitlements", surfaced as a 404 on Thrift
+# OpenSession from dbt specifically (the REST Statement Execution API's error message was the
+# one that actually named the missing entitlement; the Thrift path dbt uses just 404s).
 resource "databricks_service_principal" "staging" {
-  display_name = var.staging_service_principal_name
-  active       = true
+  display_name          = var.staging_service_principal_name
+  active                = true
+  databricks_sql_access = true
+  workspace_access      = true
 }
 
 resource "databricks_service_principal" "prod" {
-  display_name = var.prod_service_principal_name
-  active       = true
+  display_name          = var.prod_service_principal_name
+  active                = true
+  databricks_sql_access = true
+  workspace_access      = true
 }
 
 # See databricks-bundle-template/terraform/databricks.tf's identical comment on the same
