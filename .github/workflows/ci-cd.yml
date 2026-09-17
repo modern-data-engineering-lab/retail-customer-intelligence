@@ -1,0 +1,81 @@
+name: CI/CD
+
+on:
+  push:
+    branches: [main, stg]
+  pull_request:
+    branches: [main, stg]
+
+jobs:
+  lint:
+    name: Lint (ruff + sqlfluff)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install -r requirements-dev.txt
+      - run: ruff check .
+      - run: sqlfluff lint dbt/models --dialect databricks
+
+  dbt-build:
+    name: dbt build against the staging warehouse
+    needs: lint
+    runs-on: ubuntu-latest
+    environment: staging
+    env:
+      DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
+      DBT_WAREHOUSE_HTTP_PATH: ${{ secrets.DBT_WAREHOUSE_HTTP_PATH }}
+      DATABRICKS_CLIENT_ID: ${{ secrets.DATABRICKS_CLIENT_ID }}
+      DATABRICKS_CLIENT_SECRET: ${{ secrets.DATABRICKS_CLIENT_SECRET }}
+      DBT_PROFILES_DIR: ${{ github.workspace }}/dbt/profiles
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install -r requirements-dev.txt
+      - run: cp dbt/profiles/profiles.yml.example dbt/profiles/profiles.yml
+      - working-directory: dbt
+        run: dbt deps
+      - working-directory: dbt
+        run: dbt seed --target ci --full-refresh
+      - working-directory: dbt
+        run: dbt build --target ci --full-refresh
+
+  # stg -> staging, main -> production. Each deploy job needs a GitHub Environment of the same
+  # name configured with DATABRICKS_HOST / DATABRICKS_CLIENT_ID / DATABRICKS_CLIENT_SECRET
+  # secrets for a Databricks service principal (OAuth M2M) — same pattern as
+  # databricks-bundle-template's ci-cd.yml.
+  deploy-staging:
+    name: Deploy to staging
+    needs: dbt-build
+    if: github.ref == 'refs/heads/stg' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    environment: staging
+    env:
+      DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
+      DATABRICKS_CLIENT_ID: ${{ secrets.DATABRICKS_CLIENT_ID }}
+      DATABRICKS_CLIENT_SECRET: ${{ secrets.DATABRICKS_CLIENT_SECRET }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: databricks/setup-cli@main
+      - run: databricks bundle deploy -t staging
+      - run: databricks bundle run dbt_build -t staging
+
+  deploy-production:
+    name: Deploy to production
+    needs: dbt-build
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    environment: production
+    env:
+      DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
+      DATABRICKS_CLIENT_ID: ${{ secrets.DATABRICKS_CLIENT_ID }}
+      DATABRICKS_CLIENT_SECRET: ${{ secrets.DATABRICKS_CLIENT_SECRET }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: databricks/setup-cli@main
+      - run: databricks bundle deploy -t prod
+      - run: databricks bundle run dbt_build -t prod
