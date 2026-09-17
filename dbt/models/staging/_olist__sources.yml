@@ -4,11 +4,16 @@ sources:
   - name: bronze
     description: >
       Raw Olist tables loaded by src/ingestion/load_bronze.py from the 9 Kaggle CSVs sitting
-      in the Unity Catalog volume. Same catalog/schema as everything else in this environment
-      (see terraform/README.md — this repo uses one schema per environment, not a separate
-      bronze schema), distinguished only by the bronze_ table-name prefix.
+      in the Unity Catalog volume. Same schema as everything else built for a real staging/prod
+      deploy (one schema per environment, not a separate bronze schema), distinguished only by
+      the bronze_ table-name prefix. dev/ci read the staging bronze tables instead of their own
+      since nothing ever loads bronze into those throwaway schemas — real
+      TABLE_OR_VIEW_NOT_FOUND error hit without this fallback. A custom macro isn't usable here
+      (sources.yml's schema/database fields only get a limited built-in Jinja context — target,
+      env_var, var — not the project's own macros), so the conditional is inlined via var()'s
+      default expression instead.
     database: "{{ target.database }}"
-    schema: "{{ target.schema }}"
+    schema: "{{ var('source_schema', 'retail_customer_intelligence' if target.name in ['dev', 'ci'] else target.schema) }}"
     tables:
       - name: customers
         identifier: bronze_customers
