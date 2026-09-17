@@ -6,7 +6,10 @@ max_line_length = 100
 [sqlfluff:templater:dbt]
 project_dir = dbt
 profiles_dir = dbt/profiles
-target = dev
+# ci, not dev: only needs read access to resolve ref()/source()/macros, and using the same
+# oauth-m2m target as the CI dbt-build step means one set of env vars works for both local
+# linting and CI, instead of requiring a personal DATABRICKS_TOKEN just to run sqlfluff.
+target = ci
 
 [sqlfluff:indentation]
 tab_space_size = 4
