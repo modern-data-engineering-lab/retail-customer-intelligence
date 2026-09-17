@@ -26,11 +26,17 @@ resources:
             - task_key: load_bronze
           dbt_task:
             project_directory: ../../dbt
+            # No --target flag: a native dbt_task auto-generates its own profiles.yml behind
+            # the scenes with exactly one target ("databricks_cluster", built from this task's
+            # catalog/schema/warehouse_id below) — real error hit passing --target ${bundle.target}
+            # here: "profile 'retail_customer_intelligence' does not have a target named
+            # 'staging'". dbt/profiles/profiles.yml.example's dev/ci/staging/prod targets are
+            # for local CLI use only, not this job.
             commands:
               - "dbt deps"
-              - "dbt seed --target ${bundle.target} --full-refresh"
-              - "dbt build --target ${bundle.target}"
-              - "dbt docs generate --target ${bundle.target}"
+              - "dbt seed --full-refresh"
+              - "dbt build"
+              - "dbt docs generate"
             warehouse_id: ${var.warehouse_id}
             catalog: ${var.catalog}
             schema: ${var.schema}
@@ -43,10 +49,12 @@ resources:
       # environment_key is required for a dbt_task on serverless compute (Free Edition's only
       # option — see terraform/README.md) — this is where dbt-databricks actually gets
       # installed, not a task-level `libraries` block (that targets classic clusters).
+      # `client` (deprecated) fails on this workspace with "Invalid platform channel Client-1" —
+      # real error hit on first deploy; `environment_version` is the field to use instead.
       environments:
         - environment_key: dbt_env
           spec:
-            client: "1"
+            environment_version: "2"
             dependencies:
               - "dbt-databricks>=1.8.0,<2.0.0"
 
