@@ -42,7 +42,7 @@ targets:
       root_path: /Workspace/Shared/.bundle/${bundle.name}/${bundle.target}
     variables:
       catalog: prod_catalog
-      notification_email: data-alerts@example.com
+      notification_email: shaibu.samuel@yahoo.com
     # Must be the prod service principal's Application ID (a UUID, "Client ID" on its page),
     # not its display name — see databricks-bundle-template's Troubleshooting notes for the
     # real gotcha this caused there. Replace with `terraform output
