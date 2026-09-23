@@ -28,6 +28,15 @@ jobs:
     # staging due to environment protection rules." This job always tests against the staging
     # catalog regardless of which branch triggered it — that's a credential choice, not a
     # deployment, so it uses plain repo-level secrets instead of an environment-scoped set.
+    #
+    # IMPORTANT — this repo-level DATABRICKS_HOST secret is deliberately NOT the same value as
+    # the staging/production environment-scoped one below. dbt-databricks' profile `host:` field
+    # wants a bare hostname (no scheme); the `databricks` CLI used in the deploy jobs wants the
+    # full https:// URL. Setting this one to the full URL by copy-paste habit is a real mistake
+    # that was made once — it silently builds "https://https://<host>/..." and dbt fails with a
+    # DNS-resolution error on the literal hostname "https", which reads like a connectivity
+    # problem, not a formatting one. Keep this one bare; keep the environment-scoped ones below
+    # with the scheme.
     env:
       DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
       DBT_WAREHOUSE_HTTP_PATH: ${{ secrets.DBT_WAREHOUSE_HTTP_PATH }}
